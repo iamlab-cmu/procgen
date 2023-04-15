@@ -82,6 +82,7 @@ class BaseProcgenEnv(CEnv):
         resource_root=None,
         num_threads=4,
         render_mode=None,
+        level_options=None,
     ):
         if resource_root is None:
             resource_root = os.path.join(SCRIPT_DIR, "data", "assets") + os.sep
@@ -107,6 +108,16 @@ class BaseProcgenEnv(CEnv):
         if rand_seed is None:
             rand_seed = create_random_seed()
 
+        # level_options_for_cenv = None if level_options is None else np.array(level_options, dtype="int32")
+        if level_options is None:
+            # level_options_for_cenv = np.array([0, 0], dtype="int32")
+            level_options_1 = -1
+            level_options_2 = -1
+        else:
+            # level_options_for_cenv = np.array(level_options, dtype="int32")
+            level_options_1 = level_options[0]
+            level_options_2 = level_options[1] if len(level_options) > 1 else -1
+
         options.update(
             {
                 "env_name": env_name,
@@ -120,6 +131,8 @@ class BaseProcgenEnv(CEnv):
                 "render_human": render_human,
                 # these will only be used the first time an environment is created in a process
                 "resource_root": resource_root,
+                "level_options_1": level_options_1,
+                "level_options_2": level_options_2,
             }
         )
 

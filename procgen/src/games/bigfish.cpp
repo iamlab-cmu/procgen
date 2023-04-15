@@ -69,6 +69,9 @@ class BigFish : public BasicAbstractGame {
         if (options.distribution_mode == EasyMode) {
             start_r = 1;
         }
+        if (options.level_options_1 != -1) {
+            start_r = options.level_options_1/10.;
+        }
 
         r_inc = (FISH_MAX_R - start_r) / FISH_QUOTA;
 

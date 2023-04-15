@@ -72,6 +72,12 @@ def main():
     parser.add_argument(
         "--level-seed", type=int, help="select an individual level to use"
     )
+    parser.add_argument(
+        "--level-options",
+        nargs="+",
+        type=int,
+        help="specify options for the particular level"
+    )
 
     advanced_group = parser.add_argument_group("advanced optional switch arguments")
     advanced_group.add_argument(
@@ -126,6 +132,8 @@ def main():
     if args.level_seed is not None:
         kwargs["start_level"] = args.level_seed
         kwargs["num_levels"] = 1
+    if args.level_options is not None:
+        kwargs["level_options"] = args.level_options
     ia = make_interactive(
         args.vision, record_dir=args.record_dir, env_name=args.env_name, **kwargs
     )

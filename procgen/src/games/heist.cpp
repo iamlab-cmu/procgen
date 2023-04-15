@@ -129,6 +129,9 @@ class HeistGame : public BasicAbstractGame {
 
         if (num_keys > 3)
             num_keys = 3;
+        if (options.level_options_2 != -1) {
+            num_keys = options.level_options_2;
+        }
 
         has_keys.clear();
 
@@ -136,7 +139,8 @@ class HeistGame : public BasicAbstractGame {
             has_keys.push_back(false);
         }
 
-        int maze_dim = difficulty * 2 + min_maze_dim;
+        // int maze_dim = difficulty * 2 + min_maze_dim;
+        int maze_dim = (options.level_options_1 == -1) ? (difficulty * 2 + min_maze_dim) : options.level_options_1;
         float maze_scale = main_height / (world_dim * 1.0);
 
         agent->rx = .375 * maze_scale;

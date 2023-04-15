@@ -173,6 +173,9 @@ class Climber : public BasicAbstractGame {
         int min_platforms = difficulty * difficulty + 1;
         int max_platforms = (difficulty + 1) * (difficulty + 1) + 1;
         int num_platforms = rand_gen.randn(max_platforms - min_platforms + 1) + min_platforms;
+        if (options.level_options_1 != -1) {
+            num_platforms = options.level_options_1;
+        }
 
         coin_quota = 0;
         coins_collected = 0;
@@ -182,6 +185,9 @@ class Climber : public BasicAbstractGame {
 
         int margin_x = 3;
         float enemy_prob = options.distribution_mode == EasyMode ? .2 : .5;
+        if (options.level_options_2 != -1) {
+            enemy_prob = options.level_options_2/100.;
+        }
 
         for (int i = 0; i < num_platforms; i++) {
             int delta_y = choose_delta_y();

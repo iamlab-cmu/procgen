@@ -267,6 +267,9 @@ class CoinRun : public BasicAbstractGame {
         int dif = rand_gen.randn(max_difficulty) + 1;
 
         int num_sections = rand_gen.randn(dif) + dif;
+        if (options.level_options_1 != -1) {
+            num_sections = options.level_options_1;
+        }
         int curr_x = 5;
         int curr_y = 1;
 
