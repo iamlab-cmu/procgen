@@ -301,6 +301,16 @@ class LeaperGame : public BasicAbstractGame {
         water_lane_speeds = b->read_vector_float();
         goal_y = b->read_int();
     }
+
+    void observe() override {
+        Game::observe();
+        float agent_w_offset = agent->y - 0.4f;
+        float goal_w_offset = goal_y - 1.0f;
+        level_progress = agent_w_offset/goal_w_offset;
+        level_progress_max = (level_progress > level_progress_max) ? level_progress : level_progress_max;
+        *(float *)(info_bufs[info_name_to_offset.at("level_progress")]) = level_progress;
+        *(float *)(info_bufs[info_name_to_offset.at("level_progress_max")]) = level_progress_max;
+    }
 };
 
 REGISTER_GAME(NAME, LeaperGame);

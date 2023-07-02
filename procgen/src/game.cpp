@@ -143,6 +143,9 @@ void Game::step() {
 
     prev_level_seed = current_level_seed;
 
+    prev_level_progress = level_progress;
+    prev_level_progress_max = level_progress_max;
+
     if (step_data.done) {
         reset();
     }
@@ -164,6 +167,8 @@ void Game::observe() {
     *(int32_t *)(info_bufs[info_name_to_offset.at("prev_level_seed")]) = (int32_t)(prev_level_seed);
     *(uint8_t *)(info_bufs[info_name_to_offset.at("prev_level_complete")]) = (uint8_t)(step_data.level_complete);
     *(int32_t *)(info_bufs[info_name_to_offset.at("level_seed")]) = (int32_t)(current_level_seed);
+    *(float *)(info_bufs[info_name_to_offset.at("prev_level_progress")]) = prev_level_progress;
+    *(float *)(info_bufs[info_name_to_offset.at("prev_level_progress_max")]) = prev_level_progress_max;
 }
 
 void Game::game_init() {
@@ -228,6 +233,11 @@ void Game::serialize(WriteBuffer *b) {
     // std::vector<void *> info_bufs;
     // float *reward_ptr = nullptr;
     // uint8_t *first_ptr = nullptr;
+
+    b->write_float(level_progress);
+    b->write_float(level_progress_max);
+    b->write_float(prev_level_progress);
+    b->write_float(prev_level_progress_max);
 }
 
 void Game::deserialize(ReadBuffer *b) {
@@ -277,4 +287,9 @@ void Game::deserialize(ReadBuffer *b) {
 
     cur_time = b->read_int();
     is_waiting_for_step = b->read_int();
+
+    level_progress = b->read_float();
+    level_progress_max = b->read_float();
+    prev_level_progress = b->read_float();
+    prev_level_progress_max = b->read_float();
 }

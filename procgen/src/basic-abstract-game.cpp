@@ -794,6 +794,9 @@ void BasicAbstractGame::game_reset() {
     erase_if_needed();
 
     fill_elem(0, 0, main_width, main_height, SPACE);
+
+    level_progress = 0.0f;
+    level_progress_max = 0.0f;
 }
 
 QRectF BasicAbstractGame::get_screen_rect(float x, float y, float dx, float dy, float render_eps) {

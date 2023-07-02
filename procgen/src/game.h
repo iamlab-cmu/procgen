@@ -102,6 +102,11 @@ class Game {
 
     bool is_waiting_for_step = false;
 
+    float level_progress = 0.0f;
+    float level_progress_max = 0.0f;
+    float prev_level_progress = 0.0f;
+    float prev_level_progress_max = 0.0f;
+
     // pointers to buffers
     int32_t *action_ptr;
     std::vector<void *> obs_bufs;
