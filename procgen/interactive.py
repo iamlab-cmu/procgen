@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 import argparse
+from pathlib import Path
 
 from procgen import ProcgenGym3Env
 from .env import ENV_NAMES
-from gym3 import Interactive, VideoRecorderWrapper, unwrap
+from gym3 import Interactive, TrajectoryRecorderWrapper, VideoRecorderWrapper, unwrap
 
 
 class ProcgenInteractive(Interactive):
@@ -22,7 +23,7 @@ class ProcgenInteractive(Interactive):
         super()._update(dt, keys_clicked, keys_pressed)
 
 
-def make_interactive(vision, record_dir, **kwargs):
+def make_interactive(vision, record_dir, traj_dir, traj_prefix, **kwargs):
     info_key = None
     ob_key = None
     if vision == "human":
@@ -35,6 +36,15 @@ def make_interactive(vision, record_dir, **kwargs):
     if record_dir is not None:
         env = VideoRecorderWrapper(
             env=env, directory=record_dir, ob_key=ob_key, info_key=info_key
+        )
+    if traj_dir is not None:
+        traj_path = Path(traj_dir)
+        assert not traj_path.exists(), \
+            f"Expected traj_path \"{traj_dir}\" to not exist, but it already exists."
+        env = TrajectoryRecorderWrapper(
+            env=env,
+            directory=traj_dir,
+            filename_prefix=traj_prefix,
         )
     h, w, _ = env.ob_space["rgb"].shape
     return ProcgenInteractive(
@@ -77,6 +87,15 @@ def main():
         nargs="+",
         type=int,
         help="specify options for the particular level"
+    )
+    parser.add_argument(
+        "--traj-dir",
+        help="Specifies the output directory for episode trajectory logging.",
+    )
+    parser.add_argument(
+        "--traj-prefix",
+        default="",
+        help="Specifies the prefix for logged episode trajectories.",
     )
 
     advanced_group = parser.add_argument_group("advanced optional switch arguments")
@@ -135,7 +154,7 @@ def main():
     if args.level_options is not None:
         kwargs["level_options"] = args.level_options
     ia = make_interactive(
-        args.vision, record_dir=args.record_dir, env_name=args.env_name, **kwargs
+        args.vision, record_dir=args.record_dir, traj_dir=args.traj_dir, traj_prefix=args.traj_prefix, env_name=args.env_name, **kwargs
     )
     ia.run()
 
