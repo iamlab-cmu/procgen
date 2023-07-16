@@ -58,6 +58,12 @@ def analyze_trajs(input_args):
 
         traj_reward = np.sum(trajectory['reward'])
         last_human_frame = trajectory['info'][-1]['rgb']
+        episode_len = len(trajectory['reward'])
+        assert episode_len == len(trajectory['info'])
+        level_seed_array = [i['level_seed'] for i in trajectory['info']]
+        level_seed_unique = np.unique(level_seed_array)
+        assert len(level_seed_unique) == 1
+        level_seed = level_seed_unique[0]
 
         if (idx_traj + 1) < num_trajs:
             first_info_next_traj = trajectories[idx_traj+1]['info'][0]
@@ -70,6 +76,8 @@ def analyze_trajs(input_args):
             level_progress_max = trajectory['info'][-1]['level_progress_max']
 
         print(traj_path)
+        print(f" - Level seed: {level_seed}")
+        print(f" - Episode length: {episode_len}")
         print(f" - Episode reward: {traj_reward}")
         print(f" - Level complete: {level_complete}")
         print(f" - Level progress at episode end: {level_progress_at_end}")
