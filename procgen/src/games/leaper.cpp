@@ -306,10 +306,10 @@ class LeaperGame : public BasicAbstractGame {
         Game::observe();
         float agent_w_offset = agent->y - 0.4f;
         float goal_w_offset = goal_y - 1.0f;
-        level_progress = agent_w_offset/goal_w_offset;
+        level_progress = std::lround(agent_w_offset/goal_w_offset*100.0f);
         level_progress_max = (level_progress > level_progress_max) ? level_progress : level_progress_max;
-        *(float *)(info_bufs[info_name_to_offset.at("level_progress")]) = level_progress;
-        *(float *)(info_bufs[info_name_to_offset.at("level_progress_max")]) = level_progress_max;
+        *(int32_t *)(info_bufs[info_name_to_offset.at("level_progress")]) = level_progress;
+        *(int32_t *)(info_bufs[info_name_to_offset.at("level_progress_max")]) = level_progress_max;
     }
 };
 

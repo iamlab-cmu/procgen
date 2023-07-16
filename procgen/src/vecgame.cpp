@@ -270,44 +270,44 @@ VecGame::VecGame(int _nenvs, VecOptions opts) {
     {
         struct libenv_tensortype s;
         strcpy(s.name, "level_progress");
-        s.scalar_type = LIBENV_SCALAR_TYPE_REAL;
-        s.dtype = LIBENV_DTYPE_FLOAT32;
+        s.scalar_type = LIBENV_SCALAR_TYPE_DISCRETE;
+        s.dtype = LIBENV_DTYPE_INT32;
         s.ndim = 0,
-        s.low.float32 = -1000.0f;
-        s.high.float32 = 1000.0f;
+        s.low.int32 = 0;
+        s.high.int32 = 100;
         info_types.push_back(s);
     }
 
     {
         struct libenv_tensortype s;
         strcpy(s.name, "level_progress_max");
-        s.scalar_type = LIBENV_SCALAR_TYPE_REAL;
-        s.dtype = LIBENV_DTYPE_FLOAT32;
+        s.scalar_type = LIBENV_SCALAR_TYPE_DISCRETE;
+        s.dtype = LIBENV_DTYPE_INT32;
         s.ndim = 0,
-        s.low.float32 = -1000.0f;
-        s.high.float32 = 1000.0f;
+        s.low.int32 = 0;
+        s.high.int32 = 100;
         info_types.push_back(s);
     }
 
     {
         struct libenv_tensortype s;
         strcpy(s.name, "prev_level_progress");
-        s.scalar_type = LIBENV_SCALAR_TYPE_REAL;
-        s.dtype = LIBENV_DTYPE_FLOAT32;
+        s.scalar_type = LIBENV_SCALAR_TYPE_DISCRETE;
+        s.dtype = LIBENV_DTYPE_INT32;
         s.ndim = 0,
-        s.low.float32 = -1000.0f;
-        s.high.float32 = 1000.0f;
+        s.low.int32 = 0;
+        s.high.int32 = 100;
         info_types.push_back(s);
     }
 
     {
         struct libenv_tensortype s;
         strcpy(s.name, "prev_level_progress_max");
-        s.scalar_type = LIBENV_SCALAR_TYPE_REAL;
-        s.dtype = LIBENV_DTYPE_FLOAT32;
+        s.scalar_type = LIBENV_SCALAR_TYPE_DISCRETE;
+        s.dtype = LIBENV_DTYPE_INT32;
         s.ndim = 0,
-        s.low.float32 = -1000.0f;
-        s.high.float32 = 1000.0f;
+        s.low.int32 = 0;
+        s.high.int32 = 100;
         info_types.push_back(s);
     }
 

@@ -102,10 +102,10 @@ class Game {
 
     bool is_waiting_for_step = false;
 
-    float level_progress = 0.0f;
-    float level_progress_max = 0.0f;
-    float prev_level_progress = 0.0f;
-    float prev_level_progress_max = 0.0f;
+    int level_progress = 0;
+    int level_progress_max = 0;
+    int prev_level_progress = 0;
+    int prev_level_progress_max = 0;
 
     // pointers to buffers
     int32_t *action_ptr;
