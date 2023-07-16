@@ -45,6 +45,7 @@ class CoinRun : public BasicAbstractGame {
     bool is_on_crate = false;
     float gravity = 0.0f;
     float air_control = 0.0f;
+    int goal_x = 0;
 
     CoinRun()
         : BasicAbstractGame(NAME) {
@@ -411,6 +412,7 @@ class CoinRun : public BasicAbstractGame {
         }
 
         set_obj(curr_x, curr_y, GOAL);
+        goal_x = curr_x;
 
         fill_ground_block(curr_x, 0, 1, curr_y);
         fill_elem(curr_x + 1, 0, main_width - curr_x - 1, main_height, WALL_MID);
@@ -425,6 +427,7 @@ class CoinRun : public BasicAbstractGame {
         maxspeed = .5;
         has_support = false;
         facing_right = true;
+        goal_x = 0;
 
         if (options.distribution_mode == EasyMode) {
             agent->image_theme = 0;
@@ -520,6 +523,17 @@ class CoinRun : public BasicAbstractGame {
         is_on_crate = b->read_bool();
         gravity = b->read_float();
         air_control = b->read_float();
+    }
+
+    void observe() override {
+        Game::observe();
+
+        float agent_x_prog = agent->x - agent->rx - 1.0f;
+        level_progress = std::lround(agent_x_prog/(float(goal_x) - 2.0f*agent->rx - 1.0f)*100.0f);
+        level_progress = (level_progress > 100) ? 100 : level_progress;
+        level_progress_max = (level_progress > level_progress_max) ? level_progress : level_progress_max;
+        *(int32_t *)(info_bufs[info_name_to_offset.at("level_progress")]) = level_progress;
+        *(int32_t *)(info_bufs[info_name_to_offset.at("level_progress_max")]) = level_progress_max;
     }
 };
 
