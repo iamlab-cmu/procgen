@@ -35,6 +35,7 @@ class Climber : public BasicAbstractGame {
     int wall_theme = 0;
     float gravity = 0.0f;
     float air_control = 0.0f;
+    int last_platform_y;
 
     Climber()
         : BasicAbstractGame(NAME) {
@@ -231,6 +232,7 @@ class Climber : public BasicAbstractGame {
             int next_x = rand_gen.choose_one(candidates);
             curr_x = next_x;
         }
+        last_platform_y = curr_y;
     }
 
     void choose_world_dim() override {
@@ -247,6 +249,7 @@ class Climber : public BasicAbstractGame {
         maxspeed = .5;
         has_support = false;
         facing_right = true;
+        last_platform_y = 0;
 
         agent->rx = .5;
         agent->ry = .5;
@@ -343,6 +346,21 @@ class Climber : public BasicAbstractGame {
         wall_theme = b->read_int();
         gravity = b->read_float();
         air_control = b->read_float();
+    }
+
+    void observe() override {
+        Game::observe();
+
+        int obj_below_1 = get_obj_from_floats(agent->x - (agent->rx - .01), agent->y - (agent->ry + .01));
+        int obj_below_2 = get_obj_from_floats(agent->x + (agent->rx - .01), agent->y - (agent->ry + .01));
+        if (is_wall(obj_below_1) || is_wall(obj_below_2)) {
+            float agent_wall_y = agent-> y - agent->ry - 1.0f;
+            level_progress = std::lround(agent_wall_y/float(last_platform_y)*100.0f);
+        }
+
+        level_progress_max = (level_progress > level_progress_max) ? level_progress : level_progress_max;
+        *(int32_t *)(info_bufs[info_name_to_offset.at("level_progress")]) = level_progress;
+        *(int32_t *)(info_bufs[info_name_to_offset.at("level_progress_max")]) = level_progress_max;
     }
 };
 
