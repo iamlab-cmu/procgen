@@ -20,6 +20,8 @@ class HeistGame : public BasicAbstractGame {
     int world_dim = 0;
     int num_keys = 0;
     std::vector<bool> has_keys;
+    int keys_collected = 0;
+    int num_doors_unlocked = 0;
 
     HeistGame()
         : BasicAbstractGame(NAME) {
@@ -87,10 +89,12 @@ class HeistGame : public BasicAbstractGame {
         } else if (obj->type == KEY) {
             obj->will_erase = true;
             has_keys[obj->image_theme] = true;
+            keys_collected++;
         } else if (obj->type == LOCKED_DOOR) {
             int door_num = obj->image_theme;
             if (has_keys[door_num]) {
                 obj->will_erase = true;
+                num_doors_unlocked++;
             }
         }
     }
@@ -118,6 +122,8 @@ class HeistGame : public BasicAbstractGame {
         int min_maze_dim = 5;
         int max_diff = (world_dim - min_maze_dim) / 2;
         int difficulty = rand_gen.randn(max_diff + 1);
+        keys_collected = 0;
+        num_doors_unlocked = 0;
 
         options.center_agent = options.distribution_mode == MemoryMode;
 
@@ -224,6 +230,15 @@ class HeistGame : public BasicAbstractGame {
         num_keys = b->read_int();
         world_dim = b->read_int();
         has_keys = b->read_vector_bool();
+    }
+
+    void observe() override {
+        Game::observe();
+
+        level_progress = (num_keys == 0) ? 100 : std::lround((float(keys_collected) + float(num_doors_unlocked))/float(2*num_keys)*100.0f);
+        level_progress_max = (level_progress > level_progress_max) ? level_progress : level_progress_max;
+        *(int32_t *)(info_bufs[info_name_to_offset.at("level_progress")]) = level_progress;
+        *(int32_t *)(info_bufs[info_name_to_offset.at("level_progress_max")]) = level_progress_max;
     }
 };
 
