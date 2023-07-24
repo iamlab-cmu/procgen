@@ -709,6 +709,8 @@ void images_load() {
         "misc_assets/lockRed2.png",
         "misc_assets/car_yellow_5.png",
         "misc_assets/explosion5.png",
+        "misc_assets/keyYellow.png",
+        "misc_assets/lock_yellow.png",
         "platformer/playerBlue_dead.png",
         "platformer/playerBlue_roll.png",
         "platformer/playerRed_walk4.png",

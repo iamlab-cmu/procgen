@@ -54,10 +54,12 @@ class HeistGame : public BasicAbstractGame {
             names.push_back("misc_assets/keyBlue.png");
             names.push_back("misc_assets/keyGreen.png");
             names.push_back("misc_assets/keyRed.png");
+            names.push_back("misc_assets/keyYellow.png");
         } else if (type == LOCKED_DOOR) {
             names.push_back("misc_assets/lock_blue.png");
             names.push_back("misc_assets/lock_green.png");
             names.push_back("misc_assets/lock_red.png");
+            names.push_back("misc_assets/lock_yellow.png");
         }
     }
 
