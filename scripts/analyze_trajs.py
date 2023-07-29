@@ -22,16 +22,14 @@ def parse_arguments(input_args):
     return args
 
 
-def analyze_trajs(input_args):
-    args = parse_arguments(input_args)
-
-    assert args.input_dir.exists(), \
-        f"Expected input_dir \"{args.input_dir}\" to exist, but it does not."
-    traj_paths_unsorted = list(args.input_dir.glob('*.pickle'))
+def get_traj_paths_from_dir(input_dir):
+    traj_paths_unsorted = list(input_dir.glob('*.pickle'))
+    if len(traj_paths_unsorted) == 0:
+        return []
 
     # Sort trajectories by index in the filename
     first_traj_filekey = "000000000.pickle"
-    first_traj_path_as_list = list(args.input_dir.glob(f'*{first_traj_filekey}'))
+    first_traj_path_as_list = list(input_dir.glob(f'*{first_traj_filekey}'))
     assert len(first_traj_path_as_list) == 1
     first_traj_path = first_traj_path_as_list[0]
     traj_prefix = first_traj_path.name.split(first_traj_filekey)[0]
@@ -46,6 +44,16 @@ def analyze_trajs(input_args):
     traj_indices = [int(t) for t in traj_indices_as_str]
     idx_traj_sort = np.argsort(traj_indices)
     traj_paths = np.array(traj_paths_unsorted)[idx_traj_sort].tolist()
+    return traj_paths
+
+
+def analyze_trajs(input_args):
+    args = parse_arguments(input_args)
+
+    assert args.input_dir.exists(), \
+        f"Expected input_dir \"{args.input_dir}\" to exist, but it does not."
+    traj_paths = get_traj_paths_from_dir(args.input_dir)
+    assert len(traj_paths) > 0
     num_trajs = len(traj_paths)
 
     trajectories = []
