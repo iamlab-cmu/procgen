@@ -1,6 +1,7 @@
 import argparse
 import pickle
 import sys
+from datetime import datetime
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -53,47 +54,75 @@ def analyze_trajs(input_args):
     assert args.input_dir.exists(), \
         f"Expected input_dir \"{args.input_dir}\" to exist, but it does not."
     traj_paths = get_traj_paths_from_dir(args.input_dir)
-    assert len(traj_paths) > 0
-    num_trajs = len(traj_paths)
+    if len(traj_paths) > 0:
+        # Assume there are no subdirectories
+        traj_sequences = [traj_paths]
+    else:
+        # Assume there are subdirectories
+        dir_dirs = [dir for dir in args.input_dir.iterdir() if dir.is_dir()]
 
-    trajectories = []
-    for traj_path in traj_paths:
-        with open(traj_path, "rb") as f:
-            trajectory = pickle.load(f)
-        trajectories.append(trajectory)
+        traj_sequences_unsorted = []
+        candidate_dirs_time = []
+        for dir in dir_dirs:
+            try:
+                dir_time = datetime.strptime(dir.name, "%Y-%m-%d-%H-%M-%S")
 
-    for idx_traj, (traj_path, trajectory) in enumerate(zip(traj_paths, trajectories)):
+                dir_traj_paths = get_traj_paths_from_dir(dir)
+                if len(dir_traj_paths) > 0:
+                    traj_sequences_unsorted.append(dir_traj_paths)
+                    candidate_dirs_time.append(dir_time)
+                else:
+                    # Just warn for now
+                    print(f"Directory \"{dir}\" has a valid timestamp name but contains no data.")
+            except:
+                pass
 
-        traj_reward = np.sum(trajectory['reward'])
-        last_human_frame = trajectory['info'][-1]['rgb']
-        episode_len = len(trajectory['reward'])
-        assert episode_len == len(trajectory['info'])
-        level_seed_array = [i['level_seed'] for i in trajectory['info']]
-        level_seed_unique = np.unique(level_seed_array)
-        assert len(level_seed_unique) == 1
-        level_seed = level_seed_unique[0]
+        idx_dir_sort = np.argsort(candidate_dirs_time)
+        traj_sequences = [traj_sequences_unsorted[x] for x in idx_dir_sort]
 
-        if (idx_traj + 1) < num_trajs:
-            first_info_next_traj = trajectories[idx_traj+1]['info'][0]
-            level_complete = first_info_next_traj['prev_level_complete']
-            level_progress_at_end = first_info_next_traj['prev_level_progress']
-            level_progress_max = first_info_next_traj['prev_level_progress_max']
-        else:
-            level_complete = "determine by reward"
-            level_progress_at_end = trajectory['info'][-1]['level_progress']
-            level_progress_max = trajectory['info'][-1]['level_progress_max']
+    # Loop through trajectory sequences
+    for traj_paths in traj_sequences:
 
-        print(traj_path)
-        print(f" - Level seed: {level_seed}")
-        print(f" - Episode length: {episode_len}")
-        print(f" - Episode reward: {traj_reward}")
-        print(f" - Level complete: {level_complete}")
-        print(f" - Level progress at episode end: {level_progress_at_end}")
-        print(f" - Max achieved level progress: {level_progress_max}")
-        print()
+        num_trajs = len(traj_paths)
 
-        plt.imshow(last_human_frame)
-        plt.show()
+        trajectories = []
+        for traj_path in traj_paths:
+            with open(traj_path, "rb") as f:
+                trajectory = pickle.load(f)
+            trajectories.append(trajectory)
+
+        for idx_traj, (traj_path, trajectory) in enumerate(zip(traj_paths, trajectories)):
+
+            traj_reward = np.sum(trajectory['reward'])
+            last_human_frame = trajectory['info'][-1]['rgb']
+            episode_len = len(trajectory['reward'])
+            assert episode_len == len(trajectory['info'])
+            level_seed_array = [i['level_seed'] for i in trajectory['info']]
+            level_seed_unique = np.unique(level_seed_array)
+            assert len(level_seed_unique) == 1
+            level_seed = level_seed_unique[0]
+
+            if (idx_traj + 1) < num_trajs:
+                first_info_next_traj = trajectories[idx_traj+1]['info'][0]
+                level_complete = first_info_next_traj['prev_level_complete']
+                level_progress_at_end = first_info_next_traj['prev_level_progress']
+                level_progress_max = first_info_next_traj['prev_level_progress_max']
+            else:
+                level_complete = "determine by reward"
+                level_progress_at_end = trajectory['info'][-1]['level_progress']
+                level_progress_max = trajectory['info'][-1]['level_progress_max']
+
+            print(traj_path)
+            print(f" - Level seed: {level_seed}")
+            print(f" - Episode length: {episode_len}")
+            print(f" - Episode reward: {traj_reward}")
+            print(f" - Level complete: {level_complete}")
+            print(f" - Level progress at episode end: {level_progress_at_end}")
+            print(f" - Max achieved level progress: {level_progress_max}")
+            print()
+
+            plt.imshow(last_human_frame)
+            plt.show()
 
 if __name__ == "__main__":
     analyze_trajs(sys.argv[1:])
