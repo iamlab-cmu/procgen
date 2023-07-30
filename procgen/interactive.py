@@ -3,6 +3,8 @@ import argparse
 from datetime import datetime
 from pathlib import Path
 
+from ruamel.yaml import YAML
+
 from procgen import ProcgenGym3Env
 from .env import ENV_NAMES
 from gym3 import Interactive, TrajectoryRecorderWrapper, VideoRecorderWrapper, unwrap
@@ -54,6 +56,12 @@ def make_interactive(vision, record_dir, traj_dir, traj_prefix, traj_log_method,
             directory=traj_path,
             filename_prefix=traj_prefix,
         )
+        # Add a file of useful information
+        yaml_path = traj_path / "info.yaml"
+        yaml = YAML()
+        with open(yaml_path, "w") as f:
+            yaml.dump(kwargs, f)
+
     h, w, _ = env.ob_space["rgb"].shape
     return ProcgenInteractive(
         env,
