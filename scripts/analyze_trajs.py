@@ -42,6 +42,13 @@ def parse_arguments(input_args):
         default=False,
         help="If provided, specifies that the output results will be overwritten.",
     )
+    parser.add_argument(
+        "-p",
+        "--use-raw-progress",
+        action="store_true",
+        default=False,
+        help="If specified, do not round up level progress metrics upon a level being complete.",
+    )
     args = parser.parse_args(input_args)
     return args
 
@@ -176,6 +183,10 @@ def analyze_trajs(input_args):
                     level_complete = "determine by reward"
                 level_progress_at_end = trajectory['info'][-1]['level_progress']
                 level_progress_max = trajectory['info'][-1]['level_progress_max']
+
+            if not args.use_raw_progress and level_complete == 1:
+                level_progress_at_end = 100
+                level_progress_max = 100
 
             print(traj_path)
             if "env_name" in info_dict:
