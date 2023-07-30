@@ -6,6 +6,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 from ruamel.yaml import YAML
 
 
@@ -27,6 +28,19 @@ def parse_arguments(input_args):
         type=Path,
         required=True,
         help="Specifies a directory of Procgen episode trajectories.",
+    )
+    parser.add_argument(
+        "-o",
+        "--output-dir",
+        type=Path,
+        help="If provdided, specifies a directory where additional output results will be saved.",
+    )
+    parser.add_argument(
+        "-f",
+        "--force-output",
+        action="store_true",
+        default=False,
+        help="If provided, specifies that the output results will be overwritten.",
     )
     args = parser.parse_args(input_args)
     return args
@@ -58,10 +72,22 @@ def get_traj_paths_from_dir(input_dir):
 
 
 def analyze_trajs(input_args):
+
+    # Parse arguments
     args = parse_arguments(input_args)
+
+    if args.output_dir is not None:
+        save_results = True
+
+        if args.output_dir.exists():
+            assert args.force_output, \
+                f"Output directory \"{args.output_dir}\" already exists."
+    else:
+        save_results = False
 
     assert args.input_dir.exists(), \
         f"Expected input_dir \"{args.input_dir}\" to exist, but it does not."
+
     traj_paths = get_traj_paths_from_dir(args.input_dir)
     if len(traj_paths) > 0:
         # Assume there are no subdirectories
@@ -88,6 +114,20 @@ def analyze_trajs(input_args):
 
         idx_dir_sort = np.argsort(candidate_dirs_time)
         traj_sequences = [traj_sequences_unsorted[x] for x in idx_dir_sort]
+
+    # Prepare spreadsheet data
+    if save_results:
+        all_traj_parents = []
+        all_traj_filenames = []
+        all_traj_names = []
+        all_traj_seeds = []
+        all_traj_options1 = []
+        all_traj_options2 = []
+        all_traj_lengths = []
+        all_traj_rewards = []
+        all_traj_completes = []
+        all_traj_progress = []
+        all_traj_max_progress = []
 
     # Loop through trajectory sequences
     for traj_paths in traj_sequences:
@@ -152,6 +192,73 @@ def analyze_trajs(input_args):
 
             plt.imshow(last_human_frame)
             plt.show()
+
+            if save_results:
+                all_traj_parents.append(traj_path.parent)
+                all_traj_filenames.append(traj_path.name)
+                if "env_name" in info_dict:
+                    all_traj_names.append(info_dict["env_name"])
+                all_traj_seeds.append(level_seed)
+                if "level_options" in info_dict:
+                    all_traj_options1.append(info_dict["level_options"][0])
+                    all_traj_options2.append(info_dict["level_options"][1])
+                all_traj_lengths.append(episode_len)
+                all_traj_rewards.append(traj_reward)
+                all_traj_completes.append(level_complete)
+                all_traj_progress.append(level_progress_at_end)
+                all_traj_max_progress.append(level_progress_max)
+
+    if save_results:
+
+        all_traj_trials = list(range(1, len(all_traj_parents) + 1))
+        df_data = [
+            all_traj_trials,
+            all_traj_parents,
+            all_traj_filenames,
+        ]
+        df_index_names = [
+            "Trial",
+            "Path",
+            "Filename",
+        ]
+        if all_traj_names:
+            df_data.append(all_traj_names)
+            df_index_names.append("Env name")
+        df_data.append(all_traj_seeds)
+        df_index_names.append("Level seed")
+        if all_traj_options1:
+            df_data.append(all_traj_options1)
+            df_index_names.append("Level option 1")
+        if all_traj_options2:
+            df_data.append(all_traj_options2)
+            df_index_names.append("Level option 2")
+        df_data.append(all_traj_lengths)
+        df_index_names.append("Episode length")
+        df_data.append(all_traj_rewards)
+        df_index_names.append("Episode reward")
+        df_data.append(all_traj_completes)
+        df_index_names.append("Level complete")
+        df_data.append(all_traj_progress)
+        df_index_names.append("Level progress")
+        df_data.append(all_traj_max_progress)
+        df_index_names.append("Max level progress")
+
+        df = pd.DataFrame(
+            df_data,
+            index=df_index_names,
+        ).T
+
+        args.output_dir.mkdir(parents=True, exist_ok=True)
+        sheet_path = args.output_dir / "results.xlsx"
+
+        # adapted from https://stackoverflow.com/a/61617835
+        writer = pd.ExcelWriter(sheet_path, engine="xlsxwriter")
+        df.to_excel(writer, sheet_name='Results', index=False, na_rep='NaN')
+        for column in df:
+            column_length = max(df[column].astype(str).map(len).max(), len(column))
+            col_idx = df.columns.get_loc(column)
+            writer.sheets['Results'].set_column(col_idx, col_idx, column_length)
+        writer.save()
 
 if __name__ == "__main__":
     analyze_trajs(sys.argv[1:])
