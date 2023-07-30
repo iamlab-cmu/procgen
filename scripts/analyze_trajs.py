@@ -6,6 +6,15 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+from ruamel.yaml import YAML
+
+
+ENV_REWARD_SOLVED_THRESHOLD = {
+    "climber": 10.0,
+    "coinrun": 10.0,
+    "heist": 10.0,
+    "leaper": 10.0,
+}
 
 
 def parse_arguments(input_args):
@@ -91,6 +100,15 @@ def analyze_trajs(input_args):
                 trajectory = pickle.load(f)
             trajectories.append(trajectory)
 
+        # Open info file, if it exists
+        info_path = traj_path.parent / "info.yaml"
+        if info_path.exists():
+            yaml = YAML(typ="safe")
+            with open(info_path, "r") as f:
+                info_dict = yaml.load(f)
+        else:
+            info_dict = {}
+
         for idx_traj, (traj_path, trajectory) in enumerate(zip(traj_paths, trajectories)):
 
             traj_reward = np.sum(trajectory['reward'])
@@ -108,12 +126,23 @@ def analyze_trajs(input_args):
                 level_progress_at_end = first_info_next_traj['prev_level_progress']
                 level_progress_max = first_info_next_traj['prev_level_progress_max']
             else:
-                level_complete = "determine by reward"
+                if "env_name" in info_dict:
+                    env_name = info_dict["env_name"].lower()
+                    if env_name in ENV_REWARD_SOLVED_THRESHOLD:
+                        level_complete = 1 if traj_reward >= ENV_REWARD_SOLVED_THRESHOLD[env_name] else 0
+                    else:
+                        level_complete = "determine by reward (env reward threshold not implemented)"
+                else:
+                    level_complete = "determine by reward"
                 level_progress_at_end = trajectory['info'][-1]['level_progress']
                 level_progress_max = trajectory['info'][-1]['level_progress_max']
 
             print(traj_path)
+            if "env_name" in info_dict:
+                print(f" - Env name: {info_dict['env_name']}")
             print(f" - Level seed: {level_seed}")
+            if "level_options" in info_dict:
+                print(f" - Level options: {info_dict['level_options']}")
             print(f" - Episode length: {episode_len}")
             print(f" - Episode reward: {traj_reward}")
             print(f" - Level complete: {level_complete}")
