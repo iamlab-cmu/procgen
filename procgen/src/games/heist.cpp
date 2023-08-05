@@ -242,6 +242,15 @@ class HeistGame : public BasicAbstractGame {
         *(int32_t *)(info_bufs[info_name_to_offset.at("level_progress")]) = level_progress;
         *(int32_t *)(info_bufs[info_name_to_offset.at("level_progress_max")]) = level_progress_max;
     }
+
+    void set_action_xy(int move_action) override {
+        // Reduce agent velocity when either level_options has been specified, keep original velocity otherwise
+        float vel_factor = (options.level_options_1 == -1 && options.level_options_2 == -1) ? 1.0f : 0.5f;
+
+        action_vx = (move_action / 3 - 1)*vel_factor;
+        action_vy = (move_action % 3 - 1)*vel_factor;
+        action_vrot = 0;
+    }
 };
 
 REGISTER_GAME(NAME, HeistGame);
