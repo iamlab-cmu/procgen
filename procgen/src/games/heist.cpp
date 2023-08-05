@@ -22,6 +22,18 @@ class HeistGame : public BasicAbstractGame {
     std::vector<bool> has_keys;
     int keys_collected = 0;
     int num_doors_unlocked = 0;
+    std::vector <float> keys_x;
+    std::vector <float> keys_y;
+    std::vector <float> doors_x;
+    std::vector <float> doors_y;
+    float exit_x = 0.0f;
+    float exit_y = 0.0f;
+    int current_stage = 0;
+    int total_stages = 0;
+    float last_stage_x = 0.0f;
+    float last_stage_y = 0.0f;
+    float next_stage_x = 0.0f;
+    float next_stage_y = 0.0f;
 
     HeistGame()
         : BasicAbstractGame(NAME) {
@@ -92,11 +104,13 @@ class HeistGame : public BasicAbstractGame {
             obj->will_erase = true;
             has_keys[obj->image_theme] = true;
             keys_collected++;
+            update_stage();
         } else if (obj->type == LOCKED_DOOR) {
             int door_num = obj->image_theme;
             if (has_keys[door_num]) {
                 obj->will_erase = true;
                 num_doors_unlocked++;
+                update_stage();
             }
         }
     }
@@ -147,6 +161,19 @@ class HeistGame : public BasicAbstractGame {
             has_keys.push_back(false);
         }
 
+        keys_x.clear();
+        keys_y.clear();
+        doors_x.clear();
+        doors_y.clear();
+        for (int i = 0; i < num_keys; i++) {
+            keys_x.push_back(0.0f);
+            keys_y.push_back(0.0f);
+            doors_x.push_back(0.0f);
+            doors_y.push_back(0.0f);
+        }
+        current_stage = 0;
+        total_stages = 2*num_keys + 1;
+
         // int maze_dim = difficulty * 2 + min_maze_dim;
         int maze_dim = (options.level_options_1 == -1) ? (difficulty * 2 + min_maze_dim) : options.level_options_1;
         float maze_scale = main_height / (world_dim * 1.0);
@@ -188,12 +215,18 @@ class HeistGame : public BasicAbstractGame {
                     auto ent = spawn_entity(.375 * maze_scale, KEY, maze_scale * x, maze_scale * y, maze_scale, maze_scale);
                     ent->image_theme = obj - KEY_OBJ - 1;
                     match_aspect_ratio(ent);
+                    keys_x[ent->image_theme] = obj_x;
+                    keys_y[ent->image_theme] = obj_y;
                 } else if (obj >= DOOR_OBJ) {
                     auto ent = add_entity(obj_x, obj_y, 0, 0, r_ent, LOCKED_DOOR);
                     ent->image_theme = obj - DOOR_OBJ - 1;
+                    doors_x[ent->image_theme] = obj_x;
+                    doors_y[ent->image_theme] = obj_y;
                 } else if (obj == EXIT_OBJ) {
                     auto ent = spawn_entity(.375 * maze_scale, EXIT, maze_scale * x, maze_scale * y, maze_scale, maze_scale);
                     match_aspect_ratio(ent);
+                    exit_x = obj_x;
+                    exit_y = obj_y;
                 } else if (obj == AGENT_OBJ) {
                     agent->x = obj_x;
                     agent->y = obj_y;
@@ -212,6 +245,16 @@ class HeistGame : public BasicAbstractGame {
             ent->use_abs_coords = true;
             match_aspect_ratio(ent);
         }
+
+        last_stage_x = agent->x;
+        last_stage_y = agent->y;
+        if (num_keys == 0) {
+            next_stage_x = exit_x;
+            next_stage_y = exit_y;
+        } else {
+            next_stage_x = keys_x[0];
+            next_stage_y = keys_y[0];
+        }
     }
 
     void game_step() override {
@@ -225,6 +268,18 @@ class HeistGame : public BasicAbstractGame {
         b->write_int(num_keys);
         b->write_int(world_dim);
         b->write_vector_bool(has_keys);
+        b->write_vector_float(keys_x);
+        b->write_vector_float(keys_y);
+        b->write_vector_float(doors_x);
+        b->write_vector_float(doors_y);
+        b->write_float(exit_x);
+        b->write_float(exit_y);
+        b->write_int(current_stage);
+        b->write_int(total_stages);
+        b->write_float(last_stage_x);
+        b->write_float(last_stage_y);
+        b->write_float(next_stage_x);
+        b->write_float(next_stage_y);
     }
 
     void deserialize(ReadBuffer *b) override {
@@ -232,12 +287,30 @@ class HeistGame : public BasicAbstractGame {
         num_keys = b->read_int();
         world_dim = b->read_int();
         has_keys = b->read_vector_bool();
+        keys_x = b->read_vector_float();
+        keys_y = b->read_vector_float();
+        doors_x = b->read_vector_float();
+        doors_y = b->read_vector_float();
+        exit_x = b->read_float();
+        exit_y = b->read_float();
+        current_stage = b->read_int();
+        total_stages = b->read_int();
+        last_stage_x = b->read_float();
+        last_stage_y = b->read_float();
+        next_stage_x = b->read_float();
+        next_stage_y = b->read_float();
     }
 
     void observe() override {
         Game::observe();
 
-        level_progress = std::lround((float(keys_collected) + float(num_doors_unlocked))/float(2*num_keys + 1)*100.0f);
+        float dist_between_stages = pow(pow(next_stage_x - last_stage_x, 2.0f) + pow(next_stage_y - last_stage_y, 2.0f), 0.5f);
+        float dist_to_next_stage = pow(pow(next_stage_x - agent->x, 2.0f) + pow(next_stage_y - agent->y, 2.0f), 0.5f);
+
+        float slope = (dist_between_stages == 0.0f) ? 1000000.0f : -1.0f/dist_between_stages;
+        int interp_progress = std::lround((slope*dist_to_next_stage + float(current_stage) + 1)/float(total_stages)*100.0f);
+
+        level_progress = (interp_progress > level_progress) ? interp_progress : level_progress;
         level_progress_max = (level_progress > level_progress_max) ? level_progress : level_progress_max;
         *(int32_t *)(info_bufs[info_name_to_offset.at("level_progress")]) = level_progress;
         *(int32_t *)(info_bufs[info_name_to_offset.at("level_progress_max")]) = level_progress_max;
@@ -250,6 +323,27 @@ class HeistGame : public BasicAbstractGame {
         action_vx = (move_action / 3 - 1)*vel_factor;
         action_vy = (move_action % 3 - 1)*vel_factor;
         action_vrot = 0;
+    }
+
+    void update_stage() {
+        current_stage++;
+
+        last_stage_x = next_stage_x;
+        last_stage_y = next_stage_y;
+
+        if (num_doors_unlocked == num_keys) {
+            // Next stage is the exit
+            next_stage_x = exit_x;
+            next_stage_y = exit_y;
+        } else if (keys_collected == num_doors_unlocked) {
+            // Next stage is a key
+            next_stage_x = keys_x[keys_collected];
+            next_stage_y = keys_y[keys_collected];
+        } else {
+            // Next stage is a door
+            next_stage_x = doors_x[num_doors_unlocked];
+            next_stage_y = doors_y[num_doors_unlocked];
+        }
     }
 };
 
