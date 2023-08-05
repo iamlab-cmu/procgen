@@ -209,10 +209,15 @@ def analyze_trajs(input_args):
                 all_traj_filenames.append(traj_path.name)
                 if "env_name" in info_dict:
                     all_traj_names.append(info_dict["env_name"])
+                else:
+                    all_traj_names.append("unknown")
                 all_traj_seeds.append(level_seed)
                 if "level_options" in info_dict:
                     all_traj_options1.append(info_dict["level_options"][0])
                     all_traj_options2.append(info_dict["level_options"][1])
+                else:
+                    all_traj_options1.append("unknown")
+                    all_traj_options2.append("unknown")
                 all_traj_lengths.append(episode_len)
                 all_traj_rewards.append(traj_reward)
                 all_traj_completes.append(level_complete)
