@@ -210,6 +210,9 @@ def analyze_trajs(input_args):
                 if "env_name" in info_dict:
                     all_traj_names.append(info_dict["env_name"])
                 else:
+                    # by default, "coinrun" is chosen by procgen if env-name isn't specified
+                    # so it isn't possible for info.yaml to exist without the field env_name
+                    # therefore, we don't need to check for that case
                     all_traj_names.append("unknown")
                 all_traj_seeds.append(level_seed)
                 if "level_options" in info_dict:
