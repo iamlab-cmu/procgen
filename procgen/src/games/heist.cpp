@@ -237,7 +237,7 @@ class HeistGame : public BasicAbstractGame {
     void observe() override {
         Game::observe();
 
-        level_progress = (num_keys == 0) ? 100 : std::lround((float(keys_collected) + float(num_doors_unlocked))/float(2*num_keys)*100.0f);
+        level_progress = std::lround((float(keys_collected) + float(num_doors_unlocked))/float(2*num_keys + 1)*100.0f);
         level_progress_max = (level_progress > level_progress_max) ? level_progress : level_progress_max;
         *(int32_t *)(info_bufs[info_name_to_offset.at("level_progress")]) = level_progress;
         *(int32_t *)(info_bufs[info_name_to_offset.at("level_progress_max")]) = level_progress_max;
