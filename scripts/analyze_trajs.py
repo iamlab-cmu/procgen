@@ -213,9 +213,25 @@ def analyze_trajs(input_args):
                     all_traj_names.append("unknown")
                 all_traj_seeds.append(level_seed)
                 if "level_options" in info_dict:
-                    all_traj_options1.append(info_dict["level_options"][0])
-                    all_traj_options2.append(info_dict["level_options"][1])
+                    level_options_len = len(info_dict["level_options"])
+                    if level_options_len > 0:
+                        all_traj_options1.append(info_dict["level_options"][0])
+                    elif info_dict:
+                        all_traj_options1.append(-1)
+                    else:
+                        all_traj_options1.append("unknown")
+                    if level_options_len > 1:
+                        all_traj_options2.append(info_dict["level_options"][1])
+                    elif info_dict:
+                        all_traj_options2.append(-1)
+                    else:
+                        all_traj_options2.append("unknown")
+                elif info_dict:
+                    # info.yaml exists, but level_options was not specified -- defaults are used
+                    all_traj_options1.append(-1)
+                    all_traj_options2.append(-1)
                 else:
+                    # info.yaml does not exist -- can't determine
                     all_traj_options1.append("unknown")
                     all_traj_options2.append("unknown")
                 all_traj_lengths.append(episode_len)
