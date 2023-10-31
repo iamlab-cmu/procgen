@@ -420,6 +420,17 @@ class ChaserGame : public BasicAbstractGame {
         orbs_collected = b->read_int();
         maze_dim = b->read_int();
     }
+
+    void observe() override {
+        Game::observe();
+
+        // Calculate fraction of orbs collected
+        float orbs_collected_frac = float(orbs_collected) / float(total_orbs);
+        level_progress = std::lround(orbs_collected_frac*100.0f);
+        level_progress_max = (level_progress > level_progress_max) ? level_progress : level_progress_max;
+        *(int32_t *)(info_bufs[info_name_to_offset.at("level_progress")]) = level_progress;
+        *(int32_t *)(info_bufs[info_name_to_offset.at("level_progress_max")]) = level_progress_max;
+    }
 };
 
 REGISTER_GAME(NAME, ChaserGame);
