@@ -15,6 +15,7 @@ ENV_REWARD_SOLVED_THRESHOLD = {
     "coinrun": 10.0,
     "heist": 10.0,
     "leaper": 10.0,
+    "chaser": 10.0,
 }
 
 
