@@ -156,6 +156,16 @@ class ChaserGame : public BasicAbstractGame {
             fassert(false);
         }
 
+        // Set maze_dim if specified by level options 1
+        if (options.level_options_1 != -1) {
+            maze_dim = options.level_options_1;
+        }
+
+        // Set number of enemies if specified by level options 2
+        if (options.level_options_2 != -1) {
+            total_enemies = options.level_options_2;
+        }
+
         if (maze_gen == nullptr) {
             std::shared_ptr<MazeGen> _maze_gen(new MazeGen(&rand_gen, maze_dim));
             maze_gen = _maze_gen;
