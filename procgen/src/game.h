@@ -59,8 +59,8 @@ struct GameOptions {
     int physics_mode = 0;
 
     // Level options
-    int level_options_1 = 0;
-    int level_options_2 = 0;
+    int level_options_1 = -1;
+    int level_options_2 = -1;
 };
 
 class Game {
