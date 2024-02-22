@@ -113,10 +113,12 @@ class BaseProcgenEnv(CEnv):
             # level_options_for_cenv = np.array([0, 0], dtype="int32")
             level_options_1 = -1
             level_options_2 = -1
+            level_options_3 = -1
         else:
             # level_options_for_cenv = np.array(level_options, dtype="int32")
             level_options_1 = level_options[0]
             level_options_2 = level_options[1] if len(level_options) > 1 else -1
+            level_options_3 = level_options[2] if len(level_options) > 2 else -1
 
         options.update(
             {
@@ -133,6 +135,7 @@ class BaseProcgenEnv(CEnv):
                 "resource_root": resource_root,
                 "level_options_1": level_options_1,
                 "level_options_2": level_options_2,
+                "level_options_3": level_options_3,
             }
         )
 

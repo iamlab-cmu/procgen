@@ -73,6 +73,7 @@ void Game::parse_options(std::string name, VecOptions opts) {
 
     opts.consume_int("level_options_1", &options.level_options_1);
     opts.consume_int("level_options_2", &options.level_options_2);
+    opts.consume_int("level_options_3", &options.level_options_3);
     opts.ensure_empty();
 }
 

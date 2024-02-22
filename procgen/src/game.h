@@ -61,6 +61,7 @@ struct GameOptions {
     // Level options
     int level_options_1 = -1;
     int level_options_2 = -1;
+    int level_options_3 = -1;
 };
 
 class Game {
