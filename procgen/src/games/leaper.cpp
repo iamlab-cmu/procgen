@@ -8,6 +8,7 @@ const int ROAD = 2;
 const int WATER = 3;
 const int CAR = 4;
 const int FINISH_LINE = 5;
+const int DISTRACTOR = 6;
 
 const float MONSTER_RADIUS = 0.25;
 const float LOG_RADIUS = 0.45f;
@@ -63,6 +64,13 @@ class LeaperGame : public BasicAbstractGame {
             names.push_back("misc_assets/frog7.png");
         } else if (type == FINISH_LINE) {
             names.push_back("misc_assets/finish2.png");
+        } else if (type == DISTRACTOR) {
+            names.push_back("misc_assets/fruit1.png");
+            names.push_back("misc_assets/fruit2.png");
+            names.push_back("misc_assets/fruit3.png");
+            names.push_back("misc_assets/fruit4.png");
+            names.push_back("misc_assets/fruit5.png");
+            names.push_back("misc_assets/fruit6.png");
         }
     }
 
@@ -182,6 +190,15 @@ class LeaperGame : public BasicAbstractGame {
         }
 
         add_entity_rxy(main_width / 2.0, goal_y - .5, 0, 0, main_width / 2.0, .5, FINISH_LINE);
+
+        if (options.level_options_3 != -1) {
+            for (int distractor_id = 0; distractor_id < options.level_options_3; distractor_id++) {
+                auto d = std::make_shared<Entity>(main_width*rand_gen.rand01(), main_height*rand_gen.rand01(), 0, 0, 1.0, 1.0, DISTRACTOR);
+                d->render_z = 1;
+                choose_random_theme(d);
+                entities.push_back(d);
+            }
+        }
     }
 
     void spawn_entities() {
