@@ -1043,6 +1043,13 @@ void BasicAbstractGame::choose_random_theme(const std::shared_ptr<Entity> &ent) 
     ent->image_theme = rand_gen.randn(asset_num_themes[ent->image_type]);
 }
 
+// This will choose a random theme from a specified random number generator
+// Note that initialize_asset_if_necessary will pull from asset_rand_gen if an asset does not exist and/or using generated assets
+void BasicAbstractGame::choose_random_theme_from_rand_gen(const std::shared_ptr<Entity> &ent, RandGen &rand_num_gen) {
+    initialize_asset_if_necessary(ent->image_type);
+    ent->image_theme = rand_num_gen.randn(asset_num_themes[ent->image_type]);
+}
+
 void BasicAbstractGame::choose_step_random_theme(const std::shared_ptr<Entity> &ent) {
     initialize_asset_if_necessary(ent->image_type);
     ent->image_theme = step_rand_int % asset_num_themes[ent->image_type];

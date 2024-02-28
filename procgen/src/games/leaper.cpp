@@ -33,6 +33,9 @@ class LeaperGame : public BasicAbstractGame {
     std::vector<float> water_lane_speeds;
     int goal_y = 0;
 
+    // random number generator for the third axis so it remains an independent causal mechanism
+    RandGen rand_gen_distractor;
+
     LeaperGame()
         : BasicAbstractGame(NAME) {
         maxspeed = MAX_SPEED;
@@ -191,11 +194,17 @@ class LeaperGame : public BasicAbstractGame {
 
         add_entity_rxy(main_width / 2.0, goal_y - .5, 0, 0, main_width / 2.0, .5, FINISH_LINE);
 
+        // Adding distractor images
         if (options.level_options_3 != -1) {
+
+            // Seed the random number generator
+            rand_gen_distractor.seed(current_level_seed);
+
+            // Overlay the images
             for (int distractor_id = 0; distractor_id < options.level_options_3; distractor_id++) {
-                auto d = std::make_shared<Entity>(main_width*rand_gen.rand01(), main_height*rand_gen.rand01(), 0, 0, 1.0, 1.0, DISTRACTOR);
+                auto d = std::make_shared<Entity>(main_width*rand_gen_distractor.rand01(), main_height*rand_gen_distractor.rand01(), 0, 0, 1.0, 1.0, DISTRACTOR);
                 d->render_z = 1;
-                choose_random_theme(d);
+                choose_random_theme_from_rand_gen(d, rand_gen_distractor);
                 entities.push_back(d);
             }
         }
@@ -308,6 +317,7 @@ class LeaperGame : public BasicAbstractGame {
         b->write_int(bottom_water_y);
         b->write_vector_float(water_lane_speeds);
         b->write_int(goal_y);
+        rand_gen_distractor.serialize(b);
     }
 
     void deserialize(ReadBuffer *b) override {
@@ -317,6 +327,7 @@ class LeaperGame : public BasicAbstractGame {
         bottom_water_y = b->read_int();
         water_lane_speeds = b->read_vector_float();
         goal_y = b->read_int();
+        rand_gen_distractor.deserialize(b);
     }
 
     void observe() override {

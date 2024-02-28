@@ -85,6 +85,7 @@ class BasicAbstractGame : public Game {
     void match_aspect_ratio(const std::shared_ptr<Entity> &ent, bool match_width = true);
     void fit_aspect_ratio(const std::shared_ptr<Entity> &ent);
     void choose_random_theme(const std::shared_ptr<Entity> &ent);
+    void choose_random_theme_from_rand_gen(const std::shared_ptr<Entity> &ent, RandGen &rand_num_gen);
     int mask_theme_if_necessary(int theme, int type);
     void tile_image(QPainter &p, QImage *image, const QRectF &rect, float tile_ratio);
 
