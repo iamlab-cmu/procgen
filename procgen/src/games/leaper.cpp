@@ -204,6 +204,7 @@ class LeaperGame : public BasicAbstractGame {
             for (int distractor_id = 0; distractor_id < options.level_options_3; distractor_id++) {
                 auto d = std::make_shared<Entity>(main_width*rand_gen_distractor.rand01(), main_height*rand_gen_distractor.rand01(), 0, 0, 1.0, 1.0, DISTRACTOR);
                 d->render_z = 1;
+                d->avoids_collisions = true;
                 choose_random_theme_from_rand_gen(d, rand_gen_distractor);
                 entities.push_back(d);
             }
